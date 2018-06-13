@@ -1,5 +1,6 @@
 import shelve
 import os
+import copy
 
 def validaCpf(cpf, d1=0, d2=0, i=0):
     if len(cpf) == 11:
@@ -10,22 +11,23 @@ def validaCpf(cpf, d1=0, d2=0, i=0):
     else:
         return False
 
-def salvar(dic_funcionarios):
-    s=shelve.open('./funcionarios/funcionario'+'1'+'.db')
-    try:
-        s['dados']=dic_funcionarios
-    finally:
-        s.close()
-
-def carregaDados():
-    dados={}
-    if len(os.listdir('./funcionarios')) > 0:
-        s = shelve.open('./funcionarios/funcionario' + '1' + '.db')
+def salvar(lista_funcionarios):
+    for i in range(len(lista_funcionarios)):
+        s=shelve.open('./funcionarios/funcionario'+"%d"%(i))
         try:
-            dados = s['dados']
+            s['dados']=lista_funcionarios[i]
         finally:
             s.close()
+
+def carregaDados(i):
+    dados={}
+    s = shelve.open('./funcionarios/funcionario'+"%d"%(i))
+    try:
+        dados = s['dados']
+    finally:
+        s.close()
     return dados
+
 def cadastro(dic_funcionarios):
     print(" Digite o nome do funcionário: ")
     nome = input(" >>> ")
@@ -50,39 +52,38 @@ def cadastro(dic_funcionarios):
     for i in range(3):
         dataC.append(int(input(" >>> ")))
         dic_funcionarios = {'Nome': nome, 'CPF': cpf, 'sexo': sexo, 'DataNascimento': dataN, 'Cargo': cargo, 'Salario': salario, 'DataContratação': dataC}
-    print("Cadastro realizado com sucesso !")
+    lista_funcionarios.append(dic_funcionarios)
+    print(dic_funcionarios)
     return(dic_funcionarios)
 
+def listar(lista_funcionarios):
+    for i in range(len(lista_funcionarios)):
+        print(lista_funcionarios[i])
 
 def consulta(dic_funcionarios):
     print(" Digite o CPF referente ao funcionário a ser consultado: ")
     cpf = input(" >>> ")
-    if cpf in dic_funcionarios.values():
-        print(" Dados do funcionario")
-        print(" Nome:")
-        print(dic_funcionarios['Nome'])
-        print(" Cpf:")
-        print(dic_funcionarios['CPF'])
-        print(" Sexo:")
-        if dic_funcionarios['sexo'] == 0:
-            print("Masculino")
-        if dic_funcionarios['sexo'] == 1:
-            print("Feminino")
-        print(" Data de nascimento:")
-        print("%d/%d/%d" %(dic_funcionarios['DataNascimento'][0],dic_funcionarios['DataNascimento'][1],dic_funcionarios['DataNascimento'][2]))
-        print(" Cargo: ")
-        if dic_funcionarios['Cargo'] == 0:
-            print("Pedreiro")
-        if dic_funcionarios['Cargo'] == 1:
-            print("Engenheiro")
-        if dic_funcionarios['Cargo'] == 2:
-            print("Tecnico Administrativo")
-        print(" Valor do salario: ")
-        print(dic_funcionarios['Salario'])
-        print(" Data de contracao: ")
-        print("%d/%d/%d" %(dic_funcionarios['DataContratação'][0],dic_funcionarios['DataContratação'][1],dic_funcionarios['DataContratação'][2]))
-    else:
-        print(" Funcionário não encontrado! ")
+    for i in range(len(lista_funcionarios)):
+        if cpf in lista_funcionarios[i].values():
+            print(" Dados do funcionario")
+            print(" Nome: "+lista_funcionarios[i]['Nome'])
+            print(" Cpf: "+lista_funcionarios[i]['CPF'])
+            if lista_funcionarios[i]['sexo'] == 0:
+                print(" Sexo: Masculino")
+            if lista_funcionarios[i]['sexo'] == 1:
+                print(" Sexo: Feminino")
+            print(" Data de nascimento: "+"%d/%d/%d" %(lista_funcionarios[i]['DataNascimento'][0],lista_funcionarios[i]['DataNascimento'][1],lista_funcionarios[i]['DataNascimento'][2]))
+            if lista_funcionarios[i]['Cargo'] == 0:
+                print(" Cargo: Pedreiro")
+            if lista_funcionarios[i]['Cargo'] == 1:
+                print(" Cargo: Engenheiro")
+            if lista_funcionarios[i]['Cargo'] == 2:
+                print(" Cargo: Tecnico Administrativo")
+            print(" Valor do salario: "+"%d"%(lista_funcionarios[i]['Salario']))
+            print(" Data de contracao: "+"%d/%d/%d" %(lista_funcionarios[i]['DataContratação'][0],lista_funcionarios[i]['DataContratação'][1],lista_funcionarios[i]['DataContratação'][2]))
+            break
+        else:
+            print(" Funcionário não encontrado! ")
 
 def deleta(dic_funcionarios):
     print(" Digite o CPF referente ao funcionário a ser deletado: ")
@@ -410,8 +411,12 @@ def relatorio(dic_funcionarios):
 
 
 
+lista_funcionarios=[]
+dic_funcionarios={}
+if len(os.listdir('./funcionarios')) > 0:
+    for i in range(int(len(os.listdir('./funcionarios')) / 3)):
+        lista_funcionarios.append(carregaDados(i))
 
-dic_funcionarios = carregaDados()
 menu = 30
 while menu != 11:
     print("\n     \033[4;34mBem-vindo à Plataforma Virtual da PythonEngenharia!\033[m")
@@ -431,7 +436,7 @@ while menu != 11:
     print("\n     \033[1;34mDigite o número referente a sua opção:\033[m ")
     menu = int(input(" >>> "))
     if menu == 0:
-        salvar(dic_funcionarios)
+        salvar(lista_funcionarios)
     if menu == 1:
         dic_funcionarios.update(cadastro(dic_funcionarios))
     if menu == 2:
@@ -454,7 +459,8 @@ while menu != 11:
         relatorio(dic_funcionarios)
     if menu == 12:
         print(dic_funcionarios)
-        
+    if menu == 13:
+        listar(lista_funcionarios)
         
         
     
